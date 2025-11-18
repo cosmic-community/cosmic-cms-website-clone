@@ -7,12 +7,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   
   const posts = await getBlogPosts() as BlogPost[]
   
-  const blogUrls = posts.map((post) => ({
-    url: `${baseUrl}/blog/${post.slug}`,
-    lastModified: new Date(post.modified_at),
-    changeFrequency: 'weekly' as const,
-    priority: 0.7,
-  }))
+  const blogUrls = posts.map((post) => {
+    // Validate and parse the modified_at date, fallback to current date if invalid
+    let lastModified: Date
+    try {
+      const parsedDate = new Date(post.modified_at)
+      // Check if the date is valid
+      lastModified = isNaN(parsedDate.getTime()) ? new Date() : parsedDate
+    } catch {
+      lastModified = new Date()
+    }
+    
+    return {
+      url: `${baseUrl}/blog/${post.slug}`,
+      lastModified,
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    }
+  })
   
   return [
     {
