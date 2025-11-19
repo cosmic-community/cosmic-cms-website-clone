@@ -51,10 +51,15 @@ export default async function BlogPostPage({ params }: PageProps) {
   const { metadata } = post
   const author = metadata.author
   
-  // Changed: Convert tags string to array, handling both string and undefined
-  const tagsArray = metadata.tags 
-    ? metadata.tags.split(',').map(tag => tag.trim()).filter(Boolean)
-    : []
+  // Changed: Handle tags as either string or array, with proper type checking
+  const tagsArray = (() => {
+    if (!metadata.tags) return []
+    if (Array.isArray(metadata.tags)) return metadata.tags.filter(Boolean)
+    if (typeof metadata.tags === 'string') {
+      return metadata.tags.split(',').map(tag => tag.trim()).filter(Boolean)
+    }
+    return []
+  })()
   
   return (
     <article className="bg-white">
