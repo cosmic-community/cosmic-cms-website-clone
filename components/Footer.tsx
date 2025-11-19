@@ -91,6 +91,11 @@ export default function Footer() {
             <h3 className="font-semibold mb-4">Company</h3>
             <ul className="space-y-2 text-sm">
               <li>
+                <Link href="/team" className="text-gray-400 hover:text-white transition-colors">
+                  Team
+                </Link>
+              </li>
+              <li>
                 <a
                   href="https://www.cosmicjs.com/about"
                   target="_blank"
