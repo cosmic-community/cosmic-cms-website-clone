@@ -9,8 +9,15 @@ export default function BlogPostCard({ post }: BlogPostCardProps) {
   const { metadata } = post
   const author = metadata.author
   
-  // Changed: Convert comma-separated tags string to array
-  const tagsArray = metadata.tags ? metadata.tags.split(',').map(tag => tag.trim()).filter(Boolean) : []
+  // Changed: Safely convert tags to array, handling both string and array formats
+  const tagsArray = (() => {
+    if (!metadata.tags) return []
+    if (Array.isArray(metadata.tags)) return metadata.tags.filter(Boolean)
+    if (typeof metadata.tags === 'string') {
+      return metadata.tags.split(',').map(tag => tag.trim()).filter(Boolean)
+    }
+    return []
+  })()
   
   return (
     <article className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-200 overflow-hidden h-full flex flex-col">
