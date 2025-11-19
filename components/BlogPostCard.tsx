@@ -9,6 +9,9 @@ export default function BlogPostCard({ post }: BlogPostCardProps) {
   const { metadata } = post
   const author = metadata.author
   
+  // Changed: Convert comma-separated tags string to array
+  const tagsArray = metadata.tags ? metadata.tags.split(',').map(tag => tag.trim()).filter(Boolean) : []
+  
   return (
     <article className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-200 overflow-hidden h-full flex flex-col">
       {/* Featured Image */}
@@ -62,9 +65,9 @@ export default function BlogPostCard({ post }: BlogPostCardProps) {
         </div>
         
         {/* Tags */}
-        {metadata.tags && metadata.tags.length > 0 && (
+        {tagsArray.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-4">
-            {metadata.tags.slice(0, 3).map((tag, index) => (
+            {tagsArray.slice(0, 3).map((tag, index) => (
               <span
                 key={index}
                 className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium"

@@ -51,6 +51,9 @@ export default async function BlogPostPage({ params }: PageProps) {
   const { metadata } = post
   const author = metadata.author
   
+  // Changed: Convert comma-separated tags string to array
+  const tagsArray = metadata.tags ? metadata.tags.split(',').map(tag => tag.trim()).filter(Boolean) : []
+  
   return (
     <article className="bg-white">
       {/* Hero Section */}
@@ -126,10 +129,10 @@ export default async function BlogPostPage({ params }: PageProps) {
           )}
           
           {/* Tags */}
-          {metadata.tags && metadata.tags.length > 0 && (
+          {tagsArray.length > 0 && (
             <div className="mt-12 pt-8 border-t">
               <div className="flex flex-wrap gap-2">
-                {metadata.tags.map((tag, index) => (
+                {tagsArray.map((tag, index) => (
                   <span
                     key={index}
                     className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium"

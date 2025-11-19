@@ -55,7 +55,7 @@ export interface BlogPost extends CosmicObject {
     author?: Author;
     published_date?: string;
     reading_time?: string;
-    tags?: string[];
+    tags?: string; // Changed: tags is a comma-separated string, not an array
     seo_title?: string;
     seo_description?: string;
   };
