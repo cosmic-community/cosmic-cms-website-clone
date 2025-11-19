@@ -19,7 +19,14 @@ export async function getBlogPosts() {
       .props(['id', 'title', 'slug', 'metadata'])
       .depth(1)
     
-    return response.objects;
+    // Sort by published_date (newest first)
+    const posts = response.objects.sort((a: any, b: any) => {
+      const dateA = new Date(a.metadata?.published_date || '').getTime();
+      const dateB = new Date(b.metadata?.published_date || '').getTime();
+      return dateB - dateA;
+    });
+    
+    return posts;
   } catch (error) {
     if (hasStatus(error) && error.status === 404) {
       return [];
