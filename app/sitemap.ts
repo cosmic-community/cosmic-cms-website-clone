@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next'
-import { getBlogPosts } from '@/lib/cosmic'
+import { getBlogPosts, getLandingPage } from '@/lib/cosmic'
 import { BlogPost } from '@/types'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -30,19 +30,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     {
       url: baseUrl,
       lastModified: new Date(),
-      changeFrequency: 'daily',
+      changeFrequency: 'daily' as const,
       priority: 1,
     },
     {
       url: `${baseUrl}/blog`,
       lastModified: new Date(),
-      changeFrequency: 'daily',
+      changeFrequency: 'daily' as const,
       priority: 0.9,
     },
     {
       url: `${baseUrl}/features`,
       lastModified: new Date(),
-      changeFrequency: 'weekly',
+      changeFrequency: 'weekly' as const,
       priority: 0.8,
     },
     ...blogUrls,

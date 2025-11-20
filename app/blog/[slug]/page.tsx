@@ -32,6 +32,14 @@ export async function generateStaticParams() {
   }))
 }
 
+// Helper function to convert tags to array
+function getTagsArray(tags: string | string[] | undefined): string[] {
+  if (!tags) return []
+  if (Array.isArray(tags)) return tags
+  // Convert comma-separated string to array
+  return tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
+}
+
 export default async function BlogPostPage({ params }: PageProps) {
   const { slug } = await params
   const post = await getBlogPost(slug) as BlogPost | null
@@ -50,6 +58,7 @@ export default async function BlogPostPage({ params }: PageProps) {
   
   const { metadata } = post
   const author = metadata.author
+  const tagsArray = getTagsArray(metadata.tags) // Changed: Convert tags to array
   
   return (
     <article className="bg-white">
@@ -126,10 +135,10 @@ export default async function BlogPostPage({ params }: PageProps) {
           )}
           
           {/* Tags */}
-          {metadata.tags && metadata.tags.length > 0 && (
+          {tagsArray.length > 0 && (
             <div className="mt-12 pt-8 border-t">
               <div className="flex flex-wrap gap-2">
-                {metadata.tags.map((tag, index) => (
+                {tagsArray.map((tag, index) => (
                   <span
                     key={index}
                     className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium"
