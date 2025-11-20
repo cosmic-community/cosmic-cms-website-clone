@@ -5,9 +5,18 @@ interface BlogPostCardProps {
   post: BlogPost
 }
 
+// Helper function to convert tags to array
+function getTagsArray(tags: string | string[] | undefined): string[] {
+  if (!tags) return []
+  if (Array.isArray(tags)) return tags
+  // Convert comma-separated string to array
+  return tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
+}
+
 export default function BlogPostCard({ post }: BlogPostCardProps) {
   const { metadata } = post
   const author = metadata.author
+  const tagsArray = getTagsArray(metadata.tags) // Changed: Convert tags to array
   
   return (
     <article className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-200 overflow-hidden h-full flex flex-col">
@@ -62,9 +71,9 @@ export default function BlogPostCard({ post }: BlogPostCardProps) {
         </div>
         
         {/* Tags */}
-        {metadata.tags && metadata.tags.length > 0 && (
+        {tagsArray.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-4">
-            {metadata.tags.slice(0, 3).map((tag, index) => (
+            {tagsArray.slice(0, 3).map((tag, index) => (
               <span
                 key={index}
                 className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium"
