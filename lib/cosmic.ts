@@ -28,6 +28,31 @@ export async function getBlogPosts() {
   }
 }
 
+// Fetch latest blog posts with limit
+export async function getLatestBlogPosts(limit: number = 3) {
+  try {
+    const response = await cosmic.objects
+      .find({ type: 'blog-posts' })
+      .props(['id', 'title', 'slug', 'metadata'])
+      .depth(1)
+    
+    // Sort by published_date (newest first) and limit results
+    // Changed: Added explicit types to fix TS7006 errors
+    const sortedPosts = response.objects.sort((a: any, b: any) => {
+      const dateA = new Date(a.metadata?.published_date || '').getTime();
+      const dateB = new Date(b.metadata?.published_date || '').getTime();
+      return dateB - dateA;
+    });
+    
+    return sortedPosts.slice(0, limit);
+  } catch (error) {
+    if (hasStatus(error) && error.status === 404) {
+      return [];
+    }
+    throw new Error('Failed to fetch latest blog posts');
+  }
+}
+
 // Fetch a single blog post by slug
 export async function getBlogPost(slug: string) {
   try {

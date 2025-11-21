@@ -1,9 +1,11 @@
-import { getLandingPage } from '@/lib/cosmic'
-import { LandingPage } from '@/types'
+import { getLandingPage, getLatestBlogPosts } from '@/lib/cosmic'
+import { LandingPage, BlogPost } from '@/types'
 import Link from 'next/link'
+import BlogPostCard from '@/components/BlogPostCard'
 
 export default async function HomePage() {
   const page = await getLandingPage('homepage') as LandingPage | null
+  const latestPosts = await getLatestBlogPosts(3) as BlogPost[]
   
   if (!page) {
     return (
@@ -101,10 +103,13 @@ export default async function HomePage() {
       )}
 
       {/* Blog Preview Section */}
-      <section className="py-20">
+      <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Latest from Our Blog</h2>
+            <p className="text-xl text-gray-600 mb-6">
+              Stay updated with insights, tutorials, and best practices
+            </p>
             <Link
               href="/blog"
               className="text-blue-600 hover:text-blue-700 font-semibold"
@@ -112,6 +117,18 @@ export default async function HomePage() {
               View All Posts →
             </Link>
           </div>
+          
+          {latestPosts.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
+              {latestPosts.map((post) => (
+                <BlogPostCard key={post.id} post={post} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-600">No blog posts available yet. Check back soon!</p>
+            </div>
+          )}
         </div>
       </section>
     </div>
