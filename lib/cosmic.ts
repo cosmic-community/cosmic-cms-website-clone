@@ -37,7 +37,8 @@ export async function getLatestBlogPosts(limit: number = 3) {
       .depth(1)
     
     // Sort by published_date (newest first) and limit results
-    const sortedPosts = response.objects.sort((a, b) => {
+    // Changed: Added explicit types to fix TS7006 errors
+    const sortedPosts = response.objects.sort((a: any, b: any) => {
       const dateA = new Date(a.metadata?.published_date || '').getTime();
       const dateB = new Date(b.metadata?.published_date || '').getTime();
       return dateB - dateA;
