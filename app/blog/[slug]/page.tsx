@@ -3,6 +3,7 @@ import { getBlogPost, getBlogPosts } from '@/lib/cosmic'
 import { BlogPost } from '@/types'
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import SocialShareButtons from '@/components/SocialShareButtons'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -59,6 +60,11 @@ export default async function BlogPostPage({ params }: PageProps) {
   const { metadata } = post
   const author = metadata.author
   const tagsArray = getTagsArray(metadata.tags) // Changed: Convert tags to array
+  
+  // Build the full URL for sharing
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
+  const postUrl = `${baseUrl}/blog/${post.slug}`
+  const postTitle = metadata.title || post.title
   
   return (
     <article className="bg-white">
@@ -119,6 +125,11 @@ export default async function BlogPostPage({ params }: PageProps) {
             </div>
           </div>
           
+          {/* Social Share Buttons - Added */}
+          <div className="mb-8">
+            <SocialShareButtons url={postUrl} title={postTitle} />
+          </div>
+          
           {/* Excerpt */}
           {metadata.excerpt && (
             <div className="text-xl text-gray-600 mb-8 leading-relaxed">
@@ -149,6 +160,12 @@ export default async function BlogPostPage({ params }: PageProps) {
               </div>
             </div>
           )}
+          
+          {/* Bottom Social Share Buttons - Added for end of article */}
+          <div className="mt-8 pt-8 border-t">
+            <p className="text-gray-600 mb-4">Enjoyed this article? Share it with others:</p>
+            <SocialShareButtons url={postUrl} title={postTitle} />
+          </div>
           
           {/* Author Bio */}
           {author && author.metadata?.bio && (
