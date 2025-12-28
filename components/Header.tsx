@@ -28,6 +28,9 @@ export default function Header() {
             <Link href="/blog" className="hover:text-blue-400 transition-colors">
               Blog
             </Link>
+            <Link href="/contact" className="hover:text-blue-400 transition-colors">
+              Contact
+            </Link>
             <a
               href="https://www.cosmicjs.com/docs"
               target="_blank"
@@ -94,6 +97,13 @@ export default function Header() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Blog
+              </Link>
+              <Link
+                href="/contact"
+                className="hover:text-blue-400 transition-colors py-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Contact
               </Link>
               <a
                 href="https://www.cosmicjs.com/docs"
