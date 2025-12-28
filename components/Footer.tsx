@@ -111,14 +111,9 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a
-                  href="https://www.cosmicjs.com/contact"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
+                <Link href="/contact" className="text-gray-400 hover:text-white transition-colors">
                   Contact
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
