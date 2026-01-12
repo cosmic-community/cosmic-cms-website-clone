@@ -1,6 +1,9 @@
 import Link from 'next/link'
 
 export default function Footer() {
+  // Changed: Keep dynamic year calculation from base branch (better maintainability)
+  const currentYear = new Date().getFullYear()
+  
   return (
     <footer className="bg-gray-900 text-white py-12">
       <div className="container mx-auto px-4">
@@ -125,7 +128,8 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-400">
           <div>
-            © 2026 Cosmic. All rights reserved.
+            {/* Changed: Combined dynamic year from base branch with simplified "Cosmic" name from agent branch */}
+            © {currentYear} Cosmic. All rights reserved.
           </div>
           <div className="flex gap-6">
             <a
