@@ -98,6 +98,9 @@ const plans: Plan[] = [
   },
 ]
 
+// Changed: Create a default plan constant to guarantee type safety
+const defaultPlan: Plan = plans[1] as Plan // Starter plan as default
+
 // Overage rates
 const overageRates = {
   apiRequestsNonCached: 0.23 / 10000, // $0.23 per 10k
@@ -146,10 +149,12 @@ export default function CalculatorPage() {
     useBundle: false,
   })
 
-  const currentPlan = plans.find(p => p.name === selectedPlan) || plans[1]
+  // Changed: Use defaultPlan as fallback to ensure currentPlan is never undefined
+  const currentPlan: Plan = plans.find(p => p.name === selectedPlan) ?? defaultPlan
 
   // Calculate costs
   const costs = useMemo(() => {
+    // Changed: plan is now guaranteed to be defined since currentPlan is typed as Plan
     const plan = currentPlan
     const basePrice = billingPeriod === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice
 
