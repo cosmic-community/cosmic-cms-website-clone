@@ -33,6 +33,11 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/calculator" className="text-gray-400 hover:text-white transition-colors">
+                  Pricing Calculator
+                </Link>
+              </li>
+              <li>
                 <a
                   href="https://www.cosmicjs.com/docs"
                   target="_blank"
