@@ -27,6 +27,7 @@ interface Plan {
   yearlyPrice: number
   limits: PlanLimits
   features: string[]
+  popular?: boolean
 }
 
 const plans: Plan[] = [
@@ -73,6 +74,7 @@ const plans: Plan[] = [
       mediaBandwidth: 250,
     },
     features: ['1 Project', 'Community + Chat Support', '5 AI Agents (with scheduling)'],
+    popular: true,
   },
   {
     name: 'Pro',
@@ -121,7 +123,17 @@ const addOns = {
   bundle: 199, // Save 50%
   additionalUser: 29,
   additionalBucket: 29,
+  inputTokens: 5, // $5 per million/month
+  outputTokens: 19, // $19 per million/month
 }
+
+// Token packs
+const tokenPacks = [
+  { tokens: 2000000, price: 25, perMillion: 12.50 },
+  { tokens: 10000000, price: 110, perMillion: 11, popular: true },
+  { tokens: 20000000, price: 200, perMillion: 10 },
+  { tokens: 50000000, price: 475, perMillion: 9.50 },
+]
 
 export default function CalculatorPage() {
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly')
@@ -138,6 +150,8 @@ export default function CalculatorPage() {
     mediaBandwidth: 50,
     additionalUsers: 0,
     additionalBuckets: 0,
+    additionalInputTokens: 0, // in millions
+    additionalOutputTokens: 0, // in millions
   })
   
   // Add-ons
@@ -197,13 +211,17 @@ export default function CalculatorPage() {
     // Additional users and buckets
     const additionalCost = (usage.additionalUsers * addOns.additionalUser) + (usage.additionalBuckets * addOns.additionalBucket)
 
-    const totalMonthly = basePrice + overageCost + addOnsCost + additionalCost
+    // AI Token add-ons
+    const tokenCost = (usage.additionalInputTokens * addOns.inputTokens) + (usage.additionalOutputTokens * addOns.outputTokens)
+
+    const totalMonthly = basePrice + overageCost + addOnsCost + additionalCost + tokenCost
 
     return {
       basePrice,
       overageCost: Math.round(overageCost * 100) / 100,
       addOnsCost,
       additionalCost,
+      tokenCost,
       totalMonthly: Math.round(totalMonthly * 100) / 100,
       yearlyTotal: Math.round(totalMonthly * 12 * 100) / 100,
     }
@@ -226,6 +244,9 @@ export default function CalculatorPage() {
             </h1>
             <p className="text-xl text-blue-100 mb-6">
               Estimate your monthly Cosmic costs based on your usage needs
+            </p>
+            <p className="text-blue-200 mb-4">
+              Get started for free. Custom plans available.
             </p>
             <Link
               href="https://www.cosmicjs.com/pricing"
@@ -278,12 +299,17 @@ export default function CalculatorPage() {
                   <button
                     key={plan.name}
                     onClick={() => setSelectedPlan(plan.name)}
-                    className={`p-4 rounded-lg border-2 transition-all text-left ${
+                    className={`p-4 rounded-lg border-2 transition-all text-left relative ${
                       selectedPlan === plan.name
                         ? 'border-blue-600 bg-blue-50'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
+                    {plan.popular && (
+                      <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
+                        Most Popular
+                      </span>
+                    )}
                     <div className="font-bold text-lg">{plan.name}</div>
                     <div className="text-2xl font-bold text-blue-600 mt-1">
                       ${billingPeriod === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice}
@@ -293,6 +319,7 @@ export default function CalculatorPage() {
                       <li>• {plan.limits.buckets} Bucket{plan.limits.buckets > 1 ? 's' : ''}</li>
                       <li>• {plan.limits.teamMembers} Team members</li>
                       <li>• {formatNumber(plan.limits.objects)} Objects</li>
+                      <li>• {formatNumber(plan.limits.aiTokensInput)} AI tokens/mo</li>
                     </ul>
                   </button>
                 ))}
@@ -512,6 +539,46 @@ export default function CalculatorPage() {
               </div>
             </div>
 
+            {/* AI Token Add-ons */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-xl font-bold mb-2">AI Token Add-ons</h2>
+              <p className="text-gray-600 mb-4">Expand your AI capabilities with additional tokens.</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="font-medium block mb-2">
+                    Additional Input Tokens
+                    <span className="text-gray-500 font-normal ml-2">${addOns.inputTokens}/million/mo</span>
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={usage.additionalInputTokens}
+                    onChange={(e) => setUsage({ ...usage, additionalInputTokens: Number(e.target.value) })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Millions of tokens"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">Tokens provided to AI models</p>
+                </div>
+                <div>
+                  <label className="font-medium block mb-2">
+                    Additional Output Tokens
+                    <span className="text-gray-500 font-normal ml-2">${addOns.outputTokens}/million/mo</span>
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={usage.additionalOutputTokens}
+                    onChange={(e) => setUsage({ ...usage, additionalOutputTokens: Number(e.target.value) })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Millions of tokens"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">Tokens received from AI models</p>
+                </div>
+              </div>
+            </div>
+
             {/* Feature Add-ons */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-xl font-bold mb-4">Feature Add-ons</h2>
@@ -628,6 +695,13 @@ export default function CalculatorPage() {
                     <span className="font-medium">${costs.additionalCost}/mo</span>
                   </div>
                 )}
+
+                {costs.tokenCost > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">AI Token Add-ons</span>
+                    <span className="font-medium">${costs.tokenCost}/mo</span>
+                  </div>
+                )}
               </div>
 
               <div className="border-t border-gray-200 pt-4 mb-6">
@@ -684,6 +758,100 @@ export default function CalculatorPage() {
           </div>
         </div>
 
+        {/* Token Packs Section */}
+        <div className="mt-12 bg-white rounded-lg shadow-sm p-6">
+          <h2 className="text-xl font-bold mb-2">Token Packs</h2>
+          <p className="text-gray-600 mb-6">
+            Get universal tokens that work with all AI models across your projects. Used for content and code generation, image generation, AI Agents, and other AI-powered features.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {tokenPacks.map((pack) => (
+              <div
+                key={pack.tokens}
+                className={`p-4 rounded-lg border-2 ${
+                  pack.popular ? 'border-blue-600 bg-blue-50' : 'border-gray-200'
+                } relative`}
+              >
+                {pack.popular && (
+                  <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
+                    Popular
+                  </span>
+                )}
+                <div className="font-bold text-lg">{formatNumber(pack.tokens)} Token Pack</div>
+                <div className="text-2xl font-bold text-blue-600 mt-2">${pack.price}</div>
+                <div className="text-sm text-gray-500">${pack.perMillion} per million tokens</div>
+                <p className="text-xs text-gray-500 mt-2">Works with any AI model for both input and output tokens</p>
+                <a
+                  href="https://app.cosmicjs.com/account/tokens"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full mt-4 bg-gray-100 hover:bg-gray-200 text-gray-800 text-center py-2 rounded-lg font-medium transition-colors"
+                >
+                  Purchase
+                </a>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* AI Agents Section */}
+        <div className="mt-12 bg-white rounded-lg shadow-sm p-6">
+          <h2 className="text-xl font-bold mb-2">AI Agents</h2>
+          <p className="text-gray-600 mb-6">
+            Autonomous AI assistants that can work on tasks independently.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-2xl">🔧</span>
+                <h3 className="font-bold">Code Agents</h3>
+              </div>
+              <p className="text-gray-600 mb-3">Connect to GitHub repositories to build features, fix bugs, and deploy code changes</p>
+              <ul className="text-sm text-gray-600 space-y-1">
+                <li>✓ Work on isolated Git branches</li>
+                <li>✓ Create pull requests automatically</li>
+                <li>✓ Deploy to production or preview</li>
+              </ul>
+            </div>
+            <div className="p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-2xl">📝</span>
+                <h3 className="font-bold">Content Agents</h3>
+              </div>
+              <p className="text-gray-600 mb-3">Generate and manage CMS content</p>
+              <ul className="text-sm text-gray-600 space-y-1">
+                <li>✓ Create and update content objects</li>
+                <li>✓ Bulk operations and migrations</li>
+                <li>✓ Progressive web content discovery</li>
+              </ul>
+            </div>
+          </div>
+          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+            <h3 className="font-semibold mb-2">Agent Limits by Plan</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div>
+                <div className="font-medium">Free</div>
+                <div className="text-gray-600">2 agents (manual only)</div>
+              </div>
+              <div>
+                <div className="font-medium">Starter</div>
+                <div className="text-gray-600">5 agents (with scheduling)</div>
+              </div>
+              <div>
+                <div className="font-medium">Pro</div>
+                <div className="text-gray-600">10 agents (with scheduling)</div>
+              </div>
+              <div>
+                <div className="font-medium">Enterprise</div>
+                <div className="text-gray-600">Custom limits</div>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-3">
+              Note: Scheduled agents (hourly, daily, weekly, monthly) are available on paid plans. Free plan agents can only be executed manually.
+            </p>
+          </div>
+        </div>
+
         {/* Overage Rates Reference */}
         <div className="mt-12 bg-white rounded-lg shadow-sm p-6">
           <h2 className="text-xl font-bold mb-4">Overage Rates Reference</h2>
@@ -722,6 +890,26 @@ export default function CalculatorPage() {
           </div>
         </div>
 
+        {/* Testimonial */}
+        <div className="mt-12 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg p-8 text-white">
+          <div className="max-w-3xl mx-auto text-center">
+            <blockquote className="text-xl italic mb-6">
+              &ldquo;After discovering Cosmic, our developer was able to get our new blog up and running within days. Cosmic worked exactly how we hoped it would.&rdquo;
+            </blockquote>
+            <div className="flex items-center justify-center gap-4">
+              <img
+                src="https://imgix.cosmicjs.com/e9ddbff0-c1c7-11ed-a7cf-214a7cc687a9-john.jpeg?w=100&h=100&fit=crop&auto=compression,format"
+                alt="John Contreras"
+                className="w-12 h-12 rounded-full"
+              />
+              <div className="text-left">
+                <div className="font-semibold">John Contreras</div>
+                <div className="text-gray-400 text-sm">CEO at MoveSpring</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* CTA Section */}
         <div className="mt-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-8 text-center text-white">
           <h2 className="text-2xl md:text-3xl font-bold mb-4">
@@ -730,14 +918,24 @@ export default function CalculatorPage() {
           <p className="text-blue-100 mb-6 max-w-2xl mx-auto">
             Work with us to build your ideal solution with custom projects, buckets, team members, branded workspace, and custom usage limits.
           </p>
-          <a
-            href="https://www.cosmicjs.com/enterprise"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
-          >
-            Contact Enterprise Sales
-          </a>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a
+              href="https://www.cosmicjs.com/enterprise"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+            >
+              Contact Enterprise Sales
+            </a>
+            <a
+              href="https://www.cosmicjs.com/contact#sales-form"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white/10 transition-colors"
+            >
+              Book a Demo
+            </a>
+          </div>
         </div>
       </div>
     </div>
