@@ -28,6 +28,9 @@ export default function Header() {
             <Link href="/blog" className="hover:text-blue-400 transition-colors">
               Blog
             </Link>
+            <Link href="/calculator" className="hover:text-blue-400 transition-colors">
+              Pricing Calculator
+            </Link>
             <Link href="/contact" className="hover:text-blue-400 transition-colors">
               Contact
             </Link>
@@ -97,6 +100,13 @@ export default function Header() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Blog
+              </Link>
+              <Link
+                href="/calculator"
+                className="hover:text-blue-400 transition-colors py-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Pricing Calculator
               </Link>
               <Link
                 href="/contact"
