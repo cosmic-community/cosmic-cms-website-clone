@@ -4,7 +4,7 @@ export interface CosmicObject {
   slug: string;
   title: string;
   content?: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   type: string;
   created_at: string;
   modified_at: string;
@@ -75,6 +75,14 @@ export interface Author extends CosmicObject {
     twitter?: string;
     linkedin?: string;
     github?: string;
+  };
+}
+
+// Changed: Added SocialMediaPost interface for the social-media-posts object type
+export interface SocialMediaPost extends CosmicObject {
+  type: 'social-media-posts';
+  metadata: {
+    post?: string;
   };
 }
 

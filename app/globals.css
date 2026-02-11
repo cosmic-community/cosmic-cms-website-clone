@@ -54,4 +54,30 @@
   .prose pre code {
     @apply bg-transparent p-0;
   }
+
+  /* Changed: Social media posts horizontal scroll styling */
+  .social-scroll-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db transparent;
+  }
+
+  .social-scroll-container::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .social-scroll-container::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .social-scroll-container::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+    border-radius: 3px;
+  }
+
+  .social-scroll-container::-webkit-scrollbar-thumb:hover {
+    background-color: #9ca3af;
+  }
 }
