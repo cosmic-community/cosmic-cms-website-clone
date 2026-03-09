@@ -1,11 +1,14 @@
-import { getLandingPage, getLatestBlogPosts } from '@/lib/cosmic'
-import { LandingPage, BlogPost } from '@/types'
+import { getLandingPage, getLatestBlogPosts, getSocialMediaPosts } from '@/lib/cosmic'
+import { LandingPage, BlogPost, SocialMediaPost } from '@/types'
 import Link from 'next/link'
 import BlogPostCard from '@/components/BlogPostCard'
+import SocialMediaPostsWidget from '@/components/SocialMediaPostsWidget'
 
 export default async function HomePage() {
   const page = await getLandingPage('homepage') as LandingPage | null
   const latestPosts = await getLatestBlogPosts(3) as BlogPost[]
+  // Changed: Fetch social media posts for the widget
+  const socialPosts = await getSocialMediaPosts() as SocialMediaPost[]
   
   if (!page) {
     return (
@@ -131,6 +134,9 @@ export default async function HomePage() {
           )}
         </div>
       </section>
+
+      {/* Changed: Social Media Posts Widget - horizontal scroll just above footer */}
+      <SocialMediaPostsWidget posts={socialPosts} />
     </div>
   )
 }

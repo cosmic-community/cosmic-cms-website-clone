@@ -38,7 +38,7 @@ export async function getLatestBlogPosts(limit: number = 3) {
     
     // Sort by published_date (newest first) and limit results
     // Changed: Added explicit types to fix TS7006 errors
-    const sortedPosts = response.objects.sort((a: any, b: any) => {
+    const sortedPosts = response.objects.sort((a: { metadata?: { published_date?: string } }, b: { metadata?: { published_date?: string } }) => {
       const dateA = new Date(a.metadata?.published_date || '').getTime();
       const dateB = new Date(b.metadata?.published_date || '').getTime();
       return dateB - dateA;
@@ -107,5 +107,22 @@ export async function getAuthors() {
       return [];
     }
     throw new Error('Failed to fetch authors');
+  }
+}
+
+// Changed: Added function to fetch social media posts
+export async function getSocialMediaPosts() {
+  try {
+    const response = await cosmic.objects
+      .find({ type: 'social-media-posts' })
+      .props(['id', 'title', 'slug', 'metadata', 'created_at'])
+      .depth(0)
+
+    return response.objects;
+  } catch (error) {
+    if (hasStatus(error) && error.status === 404) {
+      return [];
+    }
+    throw new Error('Failed to fetch social media posts');
   }
 }
