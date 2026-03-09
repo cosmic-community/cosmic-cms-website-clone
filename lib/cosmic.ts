@@ -93,6 +93,26 @@ export async function getLandingPage(slug: string) {
   }
 }
 
+// Fetch a page by slug (from pages object type)
+export async function getPage(slug: string) {
+  try {
+    const response = await cosmic.objects
+      .findOne({
+        type: 'pages',
+        slug
+      })
+      .props(['id', 'title', 'slug', 'metadata'])
+      .depth(0)
+    
+    return response.object;
+  } catch (error) {
+    if (hasStatus(error) && error.status === 404) {
+      return null;
+    }
+    throw new Error('Failed to fetch page');
+  }
+}
+
 // Fetch all authors
 export async function getAuthors() {
   try {
