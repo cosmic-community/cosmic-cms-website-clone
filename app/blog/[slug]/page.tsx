@@ -4,6 +4,7 @@ import { BlogPost } from '@/types'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import SocialShareButtons from '@/components/SocialShareButtons'
+import JsonLd from '@/components/JsonLd'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -59,15 +60,60 @@ export default async function BlogPostPage({ params }: PageProps) {
   
   const { metadata } = post
   const author = metadata.author
-  const tagsArray = getTagsArray(metadata.tags) // Changed: Convert tags to array
+  const tagsArray = getTagsArray(metadata.tags)
   
   // Build the full URL for sharing
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.cosmicjs.com'
   const postUrl = `${baseUrl}/blog/${post.slug}`
   const postTitle = metadata.title || post.title
   
+  // JSON-LD BlogPosting structured data
+  const blogPostJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: postTitle,
+    description: metadata.seo_description || metadata.excerpt || '',
+    url: postUrl,
+    datePublished: metadata.published_date || post.created_at,
+    dateModified: post.modified_at || metadata.published_date || post.created_at,
+    ...(metadata.featured_image?.imgix_url && {
+      image: {
+        '@type': 'ImageObject',
+        url: `${metadata.featured_image.imgix_url}?w=1200&h=630&fit=crop&auto=format`,
+        width: 1200,
+        height: 630,
+      },
+    }),
+    author: {
+      '@type': 'Person',
+      name: author?.metadata?.name || author?.title || 'Cosmic Team',
+      ...(author?.metadata?.twitter && {
+        url: `https://twitter.com/${author.metadata.twitter}`,
+      }),
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Cosmic',
+      url: 'https://www.cosmicjs.com',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://www.cosmicjs.com/cosmic-logo.svg',
+      },
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': postUrl,
+    },
+    ...(tagsArray.length > 0 && {
+      keywords: tagsArray.join(', '),
+    }),
+  }
+  
   return (
     <article className="bg-white">
+      {/* JSON-LD Structured Data */}
+      <JsonLd data={blogPostJsonLd} />
+      
       {/* Hero Section */}
       {metadata.featured_image && (
         <div className="relative h-96 bg-gray-900">
@@ -125,7 +171,7 @@ export default async function BlogPostPage({ params }: PageProps) {
             </div>
           </div>
           
-          {/* Social Share Buttons - Added */}
+          {/* Social Share Buttons */}
           <div className="mb-8">
             <SocialShareButtons url={postUrl} title={postTitle} />
           </div>
@@ -161,7 +207,7 @@ export default async function BlogPostPage({ params }: PageProps) {
             </div>
           )}
           
-          {/* Bottom Social Share Buttons - Added for end of article */}
+          {/* Bottom Social Share Buttons */}
           <div className="mt-8 pt-8 border-t">
             <p className="text-gray-600 mb-4">Enjoyed this article? Share it with others:</p>
             <SocialShareButtons url={postUrl} title={postTitle} />
