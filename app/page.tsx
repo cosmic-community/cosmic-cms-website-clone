@@ -3,11 +3,11 @@ import { LandingPage, BlogPost, SocialMediaPost } from '@/types'
 import Link from 'next/link'
 import BlogPostCard from '@/components/BlogPostCard'
 import SocialMediaPostsWidget from '@/components/SocialMediaPostsWidget'
+import JsonLd from '@/components/JsonLd'
 
 export default async function HomePage() {
   const page = await getLandingPage('homepage') as LandingPage | null
   const latestPosts = await getLatestBlogPosts(3) as BlogPost[]
-  // Changed: Fetch social media posts for the widget
   const socialPosts = await getSocialMediaPosts() as SocialMediaPost[]
   
   if (!page) {
@@ -21,8 +21,48 @@ export default async function HomePage() {
   
   const { metadata } = page
   
+  // JSON-LD Organization + WebSite structured data
+  const organizationJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'Cosmic',
+    url: 'https://www.cosmicjs.com',
+    logo: 'https://www.cosmicjs.com/cosmic-logo.svg',
+    description: 'The AI-powered content management platform. Build modern content applications with APIs, AI agents, and a powerful dashboard.',
+    sameAs: [
+      'https://twitter.com/cosmicjs',
+      'https://github.com/cosmicjs',
+      'https://www.linkedin.com/company/cosmicjs',
+    ],
+    foundingDate: '2014',
+    founders: [{
+      '@type': 'Person',
+      name: 'Tony Spiro',
+    }],
+  }
+  
+  const webSiteJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Cosmic',
+    url: 'https://www.cosmicjs.com',
+    description: metadata.hero_subheadline || 'The AI-powered content management platform',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: 'https://www.cosmicjs.com/blog?q={search_term_string}',
+      },
+      'query-input': 'required name=search_term_string',
+    },
+  }
+  
   return (
     <div>
+      {/* JSON-LD Structured Data */}
+      <JsonLd data={organizationJsonLd} />
+      <JsonLd data={webSiteJsonLd} />
+      
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-blue-600 to-purple-700 text-white py-20 md:py-32">
         <div className="container mx-auto px-4">
@@ -135,7 +175,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Changed: Social Media Posts Widget - horizontal scroll just above footer */}
+      {/* Social Media Posts Widget */}
       <SocialMediaPostsWidget posts={socialPosts} />
     </div>
   )
