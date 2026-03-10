@@ -3,6 +3,8 @@ import { BlogPost } from '@/types'
 import BlogPostCard from '@/components/BlogPostCard'
 import type { Metadata } from 'next'
 
+export const revalidate = 60
+
 export const metadata: Metadata = {
   title: 'Blog - Cosmic',
   description: 'Read the latest articles about headless CMS, content management, and web development.',
