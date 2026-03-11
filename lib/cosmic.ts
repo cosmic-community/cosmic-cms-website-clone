@@ -73,6 +73,68 @@ export async function getBlogPost(slug: string) {
   }
 }
 
+// Fetch related blog posts based on tags and category
+export async function getRelatedPosts(currentSlug: string, tags?: string | string[], limit: number = 3) {
+  try {
+    const allPosts = await getBlogPosts();
+    
+    // Parse tags
+    let tagsArray: string[] = [];
+    if (tags) {
+      if (Array.isArray(tags)) {
+        tagsArray = tags;
+      } else {
+        tagsArray = tags.split(',').map((t: string) => t.trim()).filter((t: string) => t.length > 0);
+      }
+    }
+    
+    // Filter out current post
+    const otherPosts = allPosts.filter((p: { slug: string }) => p.slug !== currentSlug);
+    
+    if (tagsArray.length === 0) {
+      // No tags, return latest posts
+      return otherPosts.slice(0, limit);
+    }
+    
+    // Score posts by tag overlap
+    const scored = otherPosts.map((post: { slug: string; metadata?: { tags?: string | string[] } }) => {
+      let postTags: string[] = [];
+      const rawTags = post.metadata?.tags;
+      if (rawTags) {
+        if (Array.isArray(rawTags)) {
+          postTags = rawTags;
+        } else {
+          postTags = (rawTags as string).split(',').map((t: string) => t.trim()).filter((t: string) => t.length > 0);
+        }
+      }
+      const overlap = postTags.filter((t: string) => tagsArray.includes(t)).length;
+      return { post, score: overlap };
+    });
+    
+    // Sort by score (most related first), then take top N
+    scored.sort((a: { score: number }, b: { score: number }) => b.score - a.score);
+    return scored.slice(0, limit).map((s: { post: unknown }) => s.post);
+  } catch (error) {
+    if (hasStatus(error) && error.status === 404) {
+      return [];
+    }
+    return [];
+  }
+}
+
+// Fetch comparison blog posts (Cosmic vs X)
+export async function getComparisonPosts() {
+  try {
+    const allPosts = await getBlogPosts();
+    return allPosts.filter((p: { slug: string }) => p.slug.startsWith('cosmic-vs-'));
+  } catch (error) {
+    if (hasStatus(error) && error.status === 404) {
+      return [];
+    }
+    return [];
+  }
+}
+
 // Fetch landing page by slug
 export async function getLandingPage(slug: string) {
   try {

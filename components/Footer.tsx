@@ -1,7 +1,6 @@
 import Link from 'next/link'
 
 export default function Footer() {
-  // Changed: Keep dynamic year calculation from base branch (better maintainability)
   const currentYear = new Date().getFullYear()
   
   return (
@@ -21,7 +20,7 @@ export default function Footer() {
             <p className="text-gray-400 text-sm mb-4">
               The Headless CMS Built for Developers
             </p>
-            {/* Changed: Added social links section */}
+            {/* Social links */}
             <div className="flex items-center gap-3">
               {/* X (Twitter) */}
               <a
@@ -69,6 +68,11 @@ export default function Footer() {
               <li>
                 <Link href="/features" className="text-gray-400 hover:text-white transition-colors">
                   Features
+                </Link>
+              </li>
+              <li>
+                <Link href="/compare" className="text-gray-400 hover:text-white transition-colors">
+                  Compare
                 </Link>
               </li>
               <li>
@@ -172,7 +176,6 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-400">
           <div>
-            {/* Changed: Combined dynamic year from base branch with simplified "Cosmic" name from agent branch */}
             © {currentYear} Cosmic. All rights reserved.
           </div>
           <div className="flex gap-6">
