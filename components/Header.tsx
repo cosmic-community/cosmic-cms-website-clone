@@ -28,6 +28,9 @@ export default function Header() {
             <Link href="/blog" className="hover:text-blue-400 transition-colors">
               Blog
             </Link>
+            <Link href="/compare" className="hover:text-blue-400 transition-colors">
+              Compare
+            </Link>
             <Link href="/pricing" className="hover:text-blue-400 transition-colors">
               Pricing
             </Link>
@@ -103,6 +106,13 @@ export default function Header() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Blog
+              </Link>
+              <Link
+                href="/compare"
+                className="hover:text-blue-400 transition-colors py-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Compare
               </Link>
               <Link
                 href="/pricing"

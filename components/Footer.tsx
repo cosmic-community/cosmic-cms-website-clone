@@ -1,7 +1,6 @@
 import Link from 'next/link'
 
 export default function Footer() {
-  // Changed: Keep dynamic year calculation from base branch (better maintainability)
   const currentYear = new Date().getFullYear()
   
   return (
@@ -69,6 +68,11 @@ export default function Footer() {
               <li>
                 <Link href="/features" className="text-gray-400 hover:text-white transition-colors">
                   Features
+                </Link>
+              </li>
+              <li>
+                <Link href="/compare" className="text-gray-400 hover:text-white transition-colors">
+                  Compare
                 </Link>
               </li>
               <li>

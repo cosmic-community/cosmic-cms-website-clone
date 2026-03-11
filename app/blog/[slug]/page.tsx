@@ -1,10 +1,11 @@
 // app/blog/[slug]/page.tsx
-import { getBlogPost, getBlogPosts } from '@/lib/cosmic'
+import { getBlogPost, getBlogPosts, getRelatedPosts } from '@/lib/cosmic'
 import { BlogPost } from '@/types'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import SocialShareButtons from '@/components/SocialShareButtons'
 import JsonLd from '@/components/JsonLd'
+import RelatedPosts from '@/components/RelatedPosts'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -61,6 +62,9 @@ export default async function BlogPostPage({ params }: PageProps) {
   const { metadata } = post
   const author = metadata.author
   const tagsArray = getTagsArray(metadata.tags)
+  
+  // Fetch related posts
+  const relatedPosts = await getRelatedPosts(slug, metadata.tags) as BlogPost[]
   
   // Build the full URL for sharing
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.cosmicjs.com'
@@ -264,6 +268,15 @@ export default async function BlogPostPage({ params }: PageProps) {
                 </div>
               </div>
             </div>
+          )}
+          
+          {/* Related Posts */}
+          {relatedPosts.length > 0 && (
+            <RelatedPosts
+              posts={relatedPosts}
+              currentSlug={slug}
+              title="You Might Also Like"
+            />
           )}
         </div>
       </div>
