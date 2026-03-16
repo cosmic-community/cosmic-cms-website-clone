@@ -19,6 +19,18 @@
     @apply max-w-none;
   }
   
+  .prose a {
+    color: #2563eb;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    font-weight: 500;
+    transition: color 0.15s ease;
+  }
+  
+  .prose a:hover {
+    color: #1d4ed8;
+  }
+  
   .prose h2 {
     @apply text-3xl font-bold mt-8 mb-4 text-gray-900;
   }
@@ -29,10 +41,6 @@
   
   .prose p {
     @apply text-lg leading-relaxed mb-4 text-gray-700;
-  }
-  
-  .prose a {
-    @apply text-blue-600 hover:text-blue-700 underline font-medium transition-colors;
   }
   
   .prose ul {
