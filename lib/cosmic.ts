@@ -1,5 +1,3 @@
-Testing the AI skillz
-
 import { createBucketClient } from '@cosmicjs/sdk'
 
 export const cosmic = createBucketClient({
