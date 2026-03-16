@@ -1,3 +1,5 @@
+Hey there, another test to keep you on your toes 🦶
+
 import { createBucketClient } from '@cosmicjs/sdk'
 
 export const cosmic = createBucketClient({
