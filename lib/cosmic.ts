@@ -1,4 +1,4 @@
-Hey there, another test to keep you on your toes 🦶
+Hey there, another test to keep you on your toes 🦶 LETS GO!
 
 import { createBucketClient } from '@cosmicjs/sdk'
 
