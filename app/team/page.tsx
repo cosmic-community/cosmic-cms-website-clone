@@ -3,6 +3,8 @@ import { TeamMember } from '@/types'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+export const revalidate = 60
+
 export const metadata: Metadata = {
   title: 'Our Team - Cosmic',
   description: 'Meet the Cosmic team: a unique blend of human leadership and AI agents working together to build the future of content management.',
