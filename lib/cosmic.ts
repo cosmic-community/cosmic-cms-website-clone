@@ -192,6 +192,32 @@ export async function getAuthors() {
   }
 }
 
+// Fetch all team members
+export async function getTeamMembers() {
+  try {
+    const response = await cosmic.objects
+      .find({ type: 'team-members' })
+      .props(['id', 'title', 'slug', 'metadata'])
+      .depth(0)
+    
+    // Sort by display order
+    const sorted = response.objects.sort(
+      (a: { metadata?: { order?: number } }, b: { metadata?: { order?: number } }) => {
+        const orderA = a.metadata?.order ?? 999;
+        const orderB = b.metadata?.order ?? 999;
+        return orderA - orderB;
+      }
+    );
+    
+    return sorted;
+  } catch (error) {
+    if (hasStatus(error) && error.status === 404) {
+      return [];
+    }
+    throw new Error('Failed to fetch team members');
+  }
+}
+
 // Changed: Added function to fetch social media posts
 export async function getSocialMediaPosts() {
   try {

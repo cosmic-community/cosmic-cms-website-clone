@@ -78,6 +78,24 @@ export interface Author extends CosmicObject {
   };
 }
 
+// Team Member interface
+export interface TeamMember extends CosmicObject {
+  type: 'team-members';
+  metadata: {
+    name?: string;
+    role?: string;
+    type?: string;
+    bio?: string;
+    avatar?: {
+      url: string;
+      imgix_url: string;
+    };
+    model?: string;
+    capabilities?: string;
+    order?: number;
+  };
+}
+
 // Changed: Added SocialMediaPost interface for the social-media-posts object type
 export interface SocialMediaPost extends CosmicObject {
   type: 'social-media-posts';

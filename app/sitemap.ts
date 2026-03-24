@@ -1,77 +1,36 @@
-import { getBlogPosts } from '@/lib/cosmic'
-import { MetadataRoute } from 'next'
+import { getBlogPosts, getComparisonPosts } from '@/lib/cosmic'
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.cosmicjs.com'
-  
-  // Static pages
-  const staticPages: MetadataRoute.Sitemap = [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 1.0,
-    },
-    {
-      url: `${baseUrl}/features`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/pricing`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/compare`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/blog`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/about`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/contact`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/calculator`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.6,
-    },
+const BASE_URL = 'https://www.cosmicjs.com'
+
+export default async function sitemap() {
+  const posts = await getBlogPosts()
+  const comparisons = await getComparisonPosts()
+
+  const staticPages = [
+    { url: BASE_URL, lastModified: new Date(), changeFrequency: 'weekly' as const, priority: 1.0 },
+    { url: `${BASE_URL}/features`, lastModified: new Date(), changeFrequency: 'monthly' as const, priority: 0.8 },
+    { url: `${BASE_URL}/pricing`, lastModified: new Date(), changeFrequency: 'monthly' as const, priority: 0.8 },
+    { url: `${BASE_URL}/blog`, lastModified: new Date(), changeFrequency: 'daily' as const, priority: 0.9 },
+    { url: `${BASE_URL}/compare`, lastModified: new Date(), changeFrequency: 'weekly' as const, priority: 0.7 },
+    { url: `${BASE_URL}/about`, lastModified: new Date(), changeFrequency: 'monthly' as const, priority: 0.6 },
+    { url: `${BASE_URL}/team`, lastModified: new Date(), changeFrequency: 'monthly' as const, priority: 0.7 },
+    { url: `${BASE_URL}/contact`, lastModified: new Date(), changeFrequency: 'monthly' as const, priority: 0.5 },
+    { url: `${BASE_URL}/calculator`, lastModified: new Date(), changeFrequency: 'monthly' as const, priority: 0.6 },
   ]
-  
-  // Dynamic blog posts
-  try {
-    const posts = await getBlogPosts()
-    const blogPages: MetadataRoute.Sitemap = posts.map((post: { slug: string; metadata?: { published_date?: string } }) => {
-      // Give comparison posts higher priority
-      const isComparison = post.slug.startsWith('cosmic-vs-')
-      return {
-        url: `${baseUrl}/blog/${post.slug}`,
-        lastModified: post.metadata?.published_date ? new Date(post.metadata.published_date) : new Date(),
-        changeFrequency: 'monthly' as const,
-        priority: isComparison ? 0.8 : 0.6,
-      }
-    })
-    
-    return [...staticPages, ...blogPages]
-  } catch {
-    return staticPages
-  }
+
+  const blogPages = posts.map((post: { slug: string }) => ({
+    url: `${BASE_URL}/blog/${post.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly' as const,
+    priority: 0.7,
+  }))
+
+  const comparisonPages = comparisons.map((post: { slug: string }) => ({
+    url: `${BASE_URL}/blog/${post.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly' as const,
+    priority: 0.8,
+  }))
+
+  return [...staticPages, ...blogPages, ...comparisonPages]
 }
