@@ -1,5 +1,4 @@
 import { getTeamMembers } from '@/lib/cosmic'
-import { TeamMember } from '@/types'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
@@ -11,30 +10,77 @@ export const metadata: Metadata = {
   description: 'Meet the Cosmic team: a unique blend of human leadership and AI agents working together to build the future of content management.',
 }
 
-// Helper to extract the display value from a select-dropdown metafield
-// Select-dropdown fields return { key: "...", value: "..." } objects
-function getTypeValue(type: unknown): string {
-  if (typeof type === 'string') return type
-  if (type && typeof type === 'object' && 'value' in type) {
-    return String((type as { value: string }).value)
+// Robust check: is this member a human?
+// The "type" metafield is a select-dropdown that returns { key, value }
+// but could also be a plain string. Handle all cases.
+function isHuman(member: Record<string, unknown>): boolean {
+  const meta = member.metadata as Record<string, unknown> | undefined
+  if (!meta) return false
+  const t = meta.type
+  if (!t) return false
+  // Plain string
+  if (typeof t === 'string') return t.toLowerCase() === 'human'
+  // Object with key or value
+  if (typeof t === 'object' && t !== null) {
+    const obj = t as Record<string, unknown>
+    if (typeof obj.key === 'string' && obj.key.toLowerCase() === 'human') return true
+    if (typeof obj.value === 'string' && obj.value.toLowerCase() === 'human') return true
   }
+  return false
+}
+
+function isAgent(member: Record<string, unknown>): boolean {
+  const meta = member.metadata as Record<string, unknown> | undefined
+  if (!meta) return false
+  const t = meta.type
+  if (!t) return false
+  if (typeof t === 'string') return t.toLowerCase().includes('agent')
+  if (typeof t === 'object' && t !== null) {
+    const obj = t as Record<string, unknown>
+    if (typeof obj.key === 'string' && obj.key.toLowerCase().includes('agent')) return true
+    if (typeof obj.value === 'string' && obj.value.toLowerCase().includes('agent')) return true
+  }
+  return false
+}
+
+function getMeta(member: Record<string, unknown>, key: string): string {
+  const meta = member.metadata as Record<string, unknown> | undefined
+  if (!meta) return ''
+  const val = meta[key]
+  if (typeof val === 'string') return val
+  if (typeof val === 'number') return String(val)
   return ''
 }
 
+function getAvatarUrl(member: Record<string, unknown>): string | null {
+  const meta = member.metadata as Record<string, unknown> | undefined
+  if (!meta || !meta.avatar) return null
+  const avatar = meta.avatar
+  if (typeof avatar === 'string') {
+    if (avatar.startsWith('http')) return avatar
+    return `https://imgix.cosmicjs.com/${avatar}`
+  }
+  if (typeof avatar === 'object' && avatar !== null) {
+    const obj = avatar as Record<string, unknown>
+    if (typeof obj.imgix_url === 'string') return obj.imgix_url
+    if (typeof obj.url === 'string') return obj.url
+  }
+  return null
+}
+
 export default async function TeamPage() {
-  let members: TeamMember[] = []
+  let allMembers: Record<string, unknown>[] = []
   let fetchError: string | null = null
 
   try {
     const result = await getTeamMembers()
-    members = (result || []) as TeamMember[]
+    allMembers = (result || []) as Record<string, unknown>[]
   } catch (err) {
     fetchError = err instanceof Error ? err.message : String(err)
-    console.error('[TeamPage] Error fetching team members:', fetchError)
   }
 
-  const humans = members.filter(m => getTypeValue(m.metadata?.type) === 'Human')
-  const agents = members.filter(m => getTypeValue(m.metadata?.type) === 'AI Agent')
+  const humans = allMembers.filter(isHuman)
+  const agents = allMembers.filter(isAgent)
 
   return (
     <div>
@@ -65,10 +111,23 @@ export default async function TeamPage() {
       )}
 
       {/* Empty State */}
-      {!fetchError && members.length === 0 && (
+      {!fetchError && allMembers.length === 0 && (
         <section className="py-16">
           <div className="container mx-auto px-4 text-center">
             <p className="text-gray-500 text-lg">No team members found. Check back soon!</p>
+          </div>
+        </section>
+      )}
+
+      {/* Debug: show counts in development */}
+      {!fetchError && allMembers.length > 0 && humans.length === 0 && agents.length === 0 && (
+        <section className="py-8">
+          <div className="container mx-auto px-4">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-yellow-800 text-center">
+              <p className="font-semibold">Data loaded but no members matched filters</p>
+              <p className="text-sm mt-1">Total fetched: {allMembers.length}. This indicates a type field format mismatch.</p>
+              <p className="text-xs mt-2 font-mono">First member type value: {JSON.stringify((allMembers[0]?.metadata as Record<string, unknown>)?.type)}</p>
+            </div>
           </div>
         </section>
       )}
@@ -84,32 +143,28 @@ export default async function TeamPage() {
               </p>
               <div className="flex justify-center">
                 {humans.map((member) => {
-                  const avatarUrl = member.metadata?.avatar
-                    ? typeof member.metadata.avatar === 'object'
-                      ? (member.metadata.avatar as { imgix_url: string }).imgix_url
-                      : `https://imgix.cosmicjs.com/${member.metadata.avatar}`
-                    : null
-
+                  const avatarUrl = getAvatarUrl(member)
+                  const id = member.id as string || member.slug as string
                   return (
                     <div
-                      key={member.id}
+                      key={id}
                       className="bg-white rounded-2xl shadow-lg p-8 max-w-sm text-center hover:shadow-xl transition-shadow duration-300"
                     >
                       {avatarUrl && (
                         <img
                           src={`${avatarUrl}?w=300&h=300&fit=crop&auto=format`}
-                          alt={member.metadata?.name || member.title}
+                          alt={getMeta(member, 'name') || (member.title as string)}
                           className="w-40 h-40 rounded-full mx-auto mb-6 object-cover border-4 border-violet-100"
                         />
                       )}
                       <h3 className="text-2xl font-bold text-gray-900 mb-1">
-                        {member.metadata?.name || member.title}
+                        {getMeta(member, 'name') || member.title as string}
                       </h3>
                       <p className="text-violet-600 font-semibold mb-4">
-                        {member.metadata?.role}
+                        {getMeta(member, 'role')}
                       </p>
                       <p className="text-gray-600 leading-relaxed">
-                        {member.metadata?.bio}
+                        {getMeta(member, 'bio')}
                       </p>
                     </div>
                   )
@@ -137,47 +192,44 @@ export default async function TeamPage() {
 
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {agents.map((member) => {
-                  const avatarUrl = member.metadata?.avatar
-                    ? typeof member.metadata.avatar === 'object'
-                      ? (member.metadata.avatar as { imgix_url: string }).imgix_url
-                      : `https://imgix.cosmicjs.com/${member.metadata.avatar}`
-                    : null
-
-                  const capabilities = member.metadata?.capabilities
-                    ? String(member.metadata.capabilities).split(',').map((c: string) => c.trim()).filter((c: string) => c.length > 0)
+                  const avatarUrl = getAvatarUrl(member)
+                  const id = member.id as string || member.slug as string
+                  const capStr = getMeta(member, 'capabilities')
+                  const capabilities = capStr
+                    ? capStr.split(',').map((c: string) => c.trim()).filter((c: string) => c.length > 0)
                     : []
 
                   return (
                     <div
-                      key={member.id}
+                      key={id}
                       className="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition-shadow duration-300 flex flex-col"
                     >
                       <div className="flex items-center gap-4 mb-4">
                         {avatarUrl && (
                           <img
                             src={`${avatarUrl}?w=200&h=200&fit=crop&auto=format`}
-                            alt={member.metadata?.name || member.title}
+                            alt={getMeta(member, 'name') || (member.title as string)}
                             className="w-16 h-16 rounded-full object-cover border-2 border-violet-100"
                           />
                         )}
                         <div>
                           <h3 className="text-xl font-bold text-gray-900">
-                            {member.metadata?.name || member.title}
+                            {getMeta(member, 'name') || member.title as string}
                           </h3>
                           <p className="text-violet-600 font-medium text-sm">
-                            {member.metadata?.role}
+                            {getMeta(member, 'role')}
                           </p>
                         </div>
                       </div>
 
                       <p className="text-gray-600 leading-relaxed mb-4 flex-grow">
-                        {member.metadata?.bio}
+                        {getMeta(member, 'bio')}
                       </p>
 
-                      {member.metadata?.model && (
+                      {getMeta(member, 'model') && (
                         <div className="mb-3">
                           <span className="inline-block bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-medium">
-                            {String(member.metadata.model)}
+                            {getMeta(member, 'model')}
                           </span>
                         </div>
                       )}
