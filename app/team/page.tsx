@@ -3,7 +3,8 @@ import { TeamMember } from '@/types'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-export const revalidate = 60
+export const revalidate = 0
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Our Team - Cosmic',
@@ -11,10 +12,25 @@ export const metadata: Metadata = {
 }
 
 export default async function TeamPage() {
-  const members = await getTeamMembers() as TeamMember[]
+  let members: TeamMember[] = []
+  let fetchError: string | null = null
+
+  try {
+    const result = await getTeamMembers()
+    members = (result || []) as TeamMember[]
+    console.log('[TeamPage] Fetched members count:', members.length)
+    if (members.length > 0) {
+      console.log('[TeamPage] First member:', JSON.stringify(members[0]?.title))
+    }
+  } catch (err) {
+    fetchError = err instanceof Error ? err.message : String(err)
+    console.error('[TeamPage] Error fetching team members:', fetchError)
+  }
 
   const humans = members.filter(m => m.metadata?.type === 'Human')
   const agents = members.filter(m => m.metadata?.type === 'AI Agent')
+
+  console.log('[TeamPage] Humans:', humans.length, 'Agents:', agents.length)
 
   return (
     <div>
@@ -31,6 +47,27 @@ export default async function TeamPage() {
           </div>
         </div>
       </section>
+
+      {/* Debug / Error State */}
+      {fetchError && (
+        <section className="py-8">
+          <div className="container mx-auto px-4">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-center">
+              <p className="font-semibold">Unable to load team members</p>
+              <p className="text-sm mt-1">{fetchError}</p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Empty State */}
+      {!fetchError && members.length === 0 && (
+        <section className="py-16">
+          <div className="container mx-auto px-4 text-center">
+            <p className="text-gray-500 text-lg">No team members found. Check back soon!</p>
+          </div>
+        </section>
+      )}
 
       {/* Leadership Section */}
       {humans.length > 0 && (
@@ -103,7 +140,7 @@ export default async function TeamPage() {
                     : null
 
                   const capabilities = member.metadata?.capabilities
-                    ? member.metadata.capabilities.split(',').map((c: string) => c.trim()).filter((c: string) => c.length > 0)
+                    ? String(member.metadata.capabilities).split(',').map((c: string) => c.trim()).filter((c: string) => c.length > 0)
                     : []
 
                   return (
@@ -136,7 +173,7 @@ export default async function TeamPage() {
                       {member.metadata?.model && (
                         <div className="mb-3">
                           <span className="inline-block bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-medium">
-                            {member.metadata.model}
+                            {String(member.metadata.model)}
                           </span>
                         </div>
                       )}
