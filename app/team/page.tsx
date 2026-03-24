@@ -11,6 +11,16 @@ export const metadata: Metadata = {
   description: 'Meet the Cosmic team: a unique blend of human leadership and AI agents working together to build the future of content management.',
 }
 
+// Helper to extract the display value from a select-dropdown metafield
+// Select-dropdown fields return { key: "...", value: "..." } objects
+function getTypeValue(type: unknown): string {
+  if (typeof type === 'string') return type
+  if (type && typeof type === 'object' && 'value' in type) {
+    return String((type as { value: string }).value)
+  }
+  return ''
+}
+
 export default async function TeamPage() {
   let members: TeamMember[] = []
   let fetchError: string | null = null
@@ -18,19 +28,13 @@ export default async function TeamPage() {
   try {
     const result = await getTeamMembers()
     members = (result || []) as TeamMember[]
-    console.log('[TeamPage] Fetched members count:', members.length)
-    if (members.length > 0) {
-      console.log('[TeamPage] First member:', JSON.stringify(members[0]?.title))
-    }
   } catch (err) {
     fetchError = err instanceof Error ? err.message : String(err)
     console.error('[TeamPage] Error fetching team members:', fetchError)
   }
 
-  const humans = members.filter(m => m.metadata?.type === 'Human')
-  const agents = members.filter(m => m.metadata?.type === 'AI Agent')
-
-  console.log('[TeamPage] Humans:', humans.length, 'Agents:', agents.length)
+  const humans = members.filter(m => getTypeValue(m.metadata?.type) === 'Human')
+  const agents = members.filter(m => getTypeValue(m.metadata?.type) === 'AI Agent')
 
   return (
     <div>
@@ -48,7 +52,7 @@ export default async function TeamPage() {
         </div>
       </section>
 
-      {/* Debug / Error State */}
+      {/* Error State */}
       {fetchError && (
         <section className="py-8">
           <div className="container mx-auto px-4">
