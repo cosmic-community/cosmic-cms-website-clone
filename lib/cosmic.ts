@@ -11,6 +11,19 @@ function hasStatus(error: unknown): error is { status: number } {
   return typeof error === 'object' && error !== null && 'status' in error;
 }
 
+// Helper to safely extract a string value from a Cosmic select metafield.
+// Select-dropdown fields return { key: "...", value: "..." } objects,
+// but plain strings are also possible. This handles both.
+export function getSelectValue(field: unknown): string {
+  if (typeof field === 'string') return field
+  if (typeof field === 'object' && field !== null) {
+    const obj = field as Record<string, unknown>
+    if (typeof obj.value === 'string') return obj.value
+    if (typeof obj.key === 'string') return obj.key
+  }
+  return ''
+}
+
 // Fetch all blog posts
 export async function getBlogPosts() {
   try {
@@ -36,8 +49,6 @@ export async function getLatestBlogPosts(limit: number = 3) {
       .props(['id', 'title', 'slug', 'metadata'])
       .depth(1)
     
-    // Sort by published_date (newest first) and limit results
-    // Changed: Added explicit types to fix TS7006 errors
     const sortedPosts = response.objects.sort((a: { metadata?: { published_date?: string } }, b: { metadata?: { published_date?: string } }) => {
       const dateA = new Date(a.metadata?.published_date || '').getTime();
       const dateB = new Date(b.metadata?.published_date || '').getTime();
@@ -78,7 +89,6 @@ export async function getRelatedPosts(currentSlug: string, tags?: string | strin
   try {
     const allPosts = await getBlogPosts();
     
-    // Parse tags
     let tagsArray: string[] = [];
     if (tags) {
       if (Array.isArray(tags)) {
@@ -88,15 +98,12 @@ export async function getRelatedPosts(currentSlug: string, tags?: string | strin
       }
     }
     
-    // Filter out current post
     const otherPosts = allPosts.filter((p: { slug: string }) => p.slug !== currentSlug);
     
     if (tagsArray.length === 0) {
-      // No tags, return latest posts
       return otherPosts.slice(0, limit);
     }
     
-    // Score posts by tag overlap
     const scored = otherPosts.map((post: { slug: string; metadata?: { tags?: string | string[] } }) => {
       let postTags: string[] = [];
       const rawTags = post.metadata?.tags;
@@ -111,7 +118,6 @@ export async function getRelatedPosts(currentSlug: string, tags?: string | strin
       return { post, score: overlap };
     });
     
-    // Sort by score (most related first), then take top N
     scored.sort((a: { score: number }, b: { score: number }) => b.score - a.score);
     return scored.slice(0, limit).map((s: { post: unknown }) => s.post);
   } catch (error) {
@@ -192,7 +198,7 @@ export async function getAuthors() {
   }
 }
 
-// Changed: Added function to fetch social media posts
+// Fetch social media posts
 export async function getSocialMediaPosts() {
   try {
     const response = await cosmic.objects
@@ -206,5 +212,27 @@ export async function getSocialMediaPosts() {
       return [];
     }
     throw new Error('Failed to fetch social media posts');
+  }
+}
+
+// Fetch all team members, sorted by display_order
+export async function getTeamMembers() {
+  try {
+    const response = await cosmic.objects
+      .find({ type: 'team-members' })
+      .props(['id', 'title', 'slug', 'metadata', 'thumbnail'])
+      .depth(0)
+
+    const members = response.objects || []
+    members.sort(
+      (a: { metadata?: { display_order?: number } }, b: { metadata?: { display_order?: number } }) =>
+        (a.metadata?.display_order ?? 99) - (b.metadata?.display_order ?? 99)
+    )
+    return members
+  } catch (error) {
+    if (hasStatus(error) && error.status === 404) {
+      return []
+    }
+    return []
   }
 }
