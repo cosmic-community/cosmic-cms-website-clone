@@ -1,3 +1,4 @@
+// app/[slug]/page.tsx
 import { getLandingPage } from '@/lib/cosmic'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
@@ -12,6 +13,7 @@ const STATIC_ROUTES = [
   'contact',
   'features',
   'pricing',
+  'privacy', // Changed: Added privacy to static routes
 ]
 
 interface LandingPageMetadata {
