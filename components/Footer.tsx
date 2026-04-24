@@ -174,19 +174,18 @@ export default function Footer() {
         </div>
         
         {/* Bottom Bar */}
+        {/* Changed: Privacy link updated to internal Link */}
         <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-400">
           <div>
             © {currentYear} Cosmic. All rights reserved.
           </div>
           <div className="flex gap-6">
-            <a
-              href="https://www.cosmicjs.com/privacy"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/privacy"
               className="hover:text-white transition-colors"
             >
               Privacy
-            </a>
+            </Link>
             <a
               href="https://www.cosmicjs.com/terms"
               target="_blank"
