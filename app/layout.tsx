@@ -22,11 +22,17 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   const bucketSlug = process.env.COSMIC_BUCKET_SLUG as string
-  
+
   return (
     <html lang="en">
       <head>
         <script src="/dashboard-console-capture.js"></script>
+        {/* Changed: Added Cosmic Insights analytics script */}
+        <script
+          defer
+          src="https://cosmic-insights-ingest-staging.cosmicjs.workers.dev/script.js"
+          data-project="691cfed43376bfc6e819ddcb"
+        ></script>
       </head>
       <body>
         <Header />
